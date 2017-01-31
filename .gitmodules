@@ -7,3 +7,9 @@
 [submodule "vendor/github.com/alecthomas/units"]
 	path = vendor/github.com/alecthomas/units
 	url = https://github.com/alecthomas/units
+[submodule "vendor/github.com/olekukonko/tablewriter"]
+	path = vendor/github.com/olekukonko/tablewriter
+	url = https://github.com/olekukonko/tablewriter
+[submodule "vendor/github.com/mattn/go-runewidth"]
+	path = vendor/github.com/mattn/go-runewidth
+	url = https://github.com/mattn/go-runewidth
