@@ -39,3 +39,7 @@ Once you have downloaded the data for your event, you can display it with
 Show all tutorials sorted by trust, in reverse order (lowest to highest)
 
     pc show -f tut -s trust -r
+
+Show all the talks with the tag `testing`
+
+    pc show -t testing
