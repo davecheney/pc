@@ -42,6 +42,7 @@ func show(id int, format string, ssort string, reverse bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"title", "format", "rating", "trust", "url"})
 	format = strings.ToUpper(format)
+	var rows int
 	for _, s := range subs {
 		f := strings.SplitN(strings.ToUpper(s.Format), " ", -1)[0]
 		match, err := regexp.MatchString(format, f)
@@ -49,6 +50,7 @@ func show(id int, format string, ssort string, reverse bool) {
 		if !match {
 			continue
 		}
+		rows++
 		table.Append([]string{
 			s.Title,
 			f,
@@ -57,5 +59,6 @@ func show(id int, format string, ssort string, reverse bool) {
 			fmt.Sprintf("https://papercall.io/cfps/%d/submissions/%d", id, s.Id),
 		})
 	}
+	table.SetFooter([]string{"Count", fmt.Sprintf("%d", rows), "", "", ""}) // Add Footer
 	table.Render()
 }
