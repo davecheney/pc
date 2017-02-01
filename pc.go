@@ -10,7 +10,7 @@ import (
 
 var (
 	apiKey  = kingpin.Flag("apikey", "PAPERCALL_API_TOKEN").Short('k').Default(os.Getenv("PAPERCALL_API_TOKEN")).String()
-	eventid = kingpin.Flag("event", "event id.").Short('e').Int()
+	eventid = kingpin.Flag("event", "event id.").Short('e').Default("274").Int()
 	refresh = kingpin.Command("refresh", "Refresh event cache")
 	_       = kingpin.Command("show", "show proposals").Default()
 )
