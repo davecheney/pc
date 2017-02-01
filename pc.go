@@ -17,7 +17,7 @@ func main() {
 
 	kingpin.Command("refresh", "Refresh event cache")
 	showCmd := kingpin.Command("show", "show proposals").Default()
-	format := showCmd.Flag("format", "presentation format.").Short('f').Default(".+").String()
+	format := showCmd.Flag("format", "presentation format.").Short('f').String()
 	sort := showCmd.Flag("sort", "sort by which column").Short('s').Default("rating").String()
 	reverse := showCmd.Flag("reverse", "reverse sort order").Short('r').Bool()
 	tag := showCmd.Flag("tag", "filter only tag").Short('t').String()
