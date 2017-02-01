@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
 )
 
-func show(id int) {
+func show(id int, format string, ssort string, reverse bool) {
 	f, err := os.Open(fmt.Sprintf("papercall.%d.json", id))
 	check(err)
 
@@ -19,15 +20,38 @@ func show(id int) {
 	err = dec.Decode(&subs)
 	check(err)
 
-	// sort.Slice(subs, func(i, j int) bool { return subs[i].Rating > subs[j].Rating })
-	sort.Slice(subs, func(i, j int) bool { return subs[i].Updated.After(subs[j].Updated) })
+	rev := func(a, b int) (int, int) {
+		if reverse {
+			a, b = b, a
+		}
+		return a, b
+	}
+
+	switch strings.ToLower(ssort) {
+	case "updated":
+		sort.Slice(subs, func(i, j int) bool { i, j = rev(i, j); return subs[i].Updated.After(subs[j].Updated) })
+	case "trust":
+		sort.Slice(subs, func(i, j int) bool { i, j = rev(i, j); return subs[i].Trust > subs[j].Trust })
+	case "rating":
+		fallthrough
+	default:
+		sort.Slice(subs, func(i, j int) bool { i, j = rev(i, j); return subs[i].Rating > subs[j].Rating })
+
+	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"title", "kind", "rating", "trust", "url"})
+	table.SetHeader([]string{"title", "format", "rating", "trust", "url"})
+	format = strings.ToUpper(format)
 	for _, s := range subs {
+		f := strings.SplitN(strings.ToUpper(s.Format), " ", -1)[0]
+		match, err := regexp.MatchString(format, f)
+		check(err)
+		if !match {
+			continue
+		}
 		table.Append([]string{
 			s.Title,
-			strings.SplitN(strings.ToUpper(s.Format), " ", -1)[0],
+			f,
 			fmt.Sprintf("%0.2f", s.Rating),
 			fmt.Sprintf("%0.2f", s.Trust),
 			fmt.Sprintf("https://papercall.io/cfps/%d/submissions/%d", id, s.Id),

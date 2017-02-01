@@ -12,7 +12,7 @@ A CLI for papercall.io conferences.
 `pc` requires API access to download data.
 API access is a paid feature, _`pc` will not work with the free papercall plan_.
 
-To obtain your API token, go to the papercall website, click the events tab, choose your event, then choose the Organisers link on the right hand side. On the list of organisers for your event your API key will be listed under your name.
+To obtain your API token, go to the papercall website, click the events tab, choose your event, then choose the Organisers link on the right hand side. On the list of organisers for your event your API token will be listed under your name.
 
 Once you have your API key export it in your shell
 
@@ -34,4 +34,8 @@ Once you have downloaded the data for your event, you can display it with
 
     pc show
 
+# Example usage
 
+Show all tutorials sorted by trust, in reverse order (lowest to highest)
+
+    pc show -f tut -s trust -r
