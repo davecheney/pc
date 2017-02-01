@@ -8,10 +8,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aclements/go-moremath/stats"
 	"github.com/olekukonko/tablewriter"
 )
 
-func show(id int, format string, ssort string, reverse bool) {
+func show(id int, format string, ssort string, reverse bool, tag string) {
 	f, err := os.Open(fmt.Sprintf("papercall.%d.json", id))
 	check(err)
 
@@ -40,7 +41,7 @@ func show(id int, format string, ssort string, reverse bool) {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"title", "format", "rating", "trust", "url"})
+	table.SetHeader([]string{"title", "format", "tags", "rating", "trust", "url"})
 	format = strings.ToUpper(format)
 	var rows int
 	for _, s := range subs {
@@ -50,15 +51,26 @@ func show(id int, format string, ssort string, reverse bool) {
 		if !match {
 			continue
 		}
+		tags := strings.Join(s.Tags, " ")
+		match, err = regexp.MatchString(tag, tags)
+		check(err)
+		if !match {
+			continue
+		}
 		rows++
+		var samp stats.Sample
+		for _, r := range s.Ratings {
+			samp.Xs = append(samp.Xs, float64(r.Value))
+		}
 		table.Append([]string{
 			s.Title,
 			f,
-			fmt.Sprintf("%0.2f", s.Rating),
+			tags,
+			fmt.Sprintf("%0.2f (%0.2f)", samp.Mean(), samp.StdDev()),
 			fmt.Sprintf("%0.2f", s.Trust),
 			fmt.Sprintf("https://papercall.io/cfps/%d/submissions/%d", id, s.Id),
 		})
 	}
-	table.SetFooter([]string{"Count", fmt.Sprintf("%d", rows), "", "", ""}) // Add Footer
+	table.SetFooter([]string{"Count", fmt.Sprintf("%d", rows), "", "", "", ""})
 	table.Render()
 }

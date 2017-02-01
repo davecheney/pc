@@ -20,12 +20,13 @@ func main() {
 	format := showCmd.Flag("format", "presentation format.").Short('f').Default(".+").String()
 	sort := showCmd.Flag("sort", "sort by which column").Short('s').Default("rating").String()
 	reverse := showCmd.Flag("reverse", "reverse sort order").Short('r').Bool()
+	tag := showCmd.Flag("tag", "filter only tag").Short('t').String()
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
 	kingpin.CommandLine.Help = "pc is a command line tool to analyse PaperCall.io CFP results"
 	switch kingpin.Parse() {
 	case "show":
-		show(*eventid, *format, *sort, *reverse)
+		show(*eventid, *format, *sort, *reverse, *tag)
 	case "refresh":
 		refreshCache(*eventid)
 	default:
