@@ -21,6 +21,8 @@ func main() {
 	sort := showCmd.Flag("sort", "sort by which column").Short('s').Default("rating").String()
 	reverse := showCmd.Flag("reverse", "reverse sort order").Short('r').Bool()
 	tag := showCmd.Flag("tag", "filter only tag").Short('t').String()
+	reviewersCmd := kingpin.Command("reviewers", "show reviewer compleition.")
+	revsort := reviewersCmd.Flag("sort", "sort by which column").Short('s').Default("count").String()
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
 	kingpin.CommandLine.Help = "pc is a command line tool to analyse PaperCall.io CFP results"
@@ -29,6 +31,8 @@ func main() {
 		show(*eventid, *format, *sort, *reverse, *tag)
 	case "refresh":
 		refreshCache(*eventid)
+	case "reviewers":
+		reviewers(*eventid, *revsort)
 	default:
 		os.Exit(1)
 	}

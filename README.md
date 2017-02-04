@@ -43,3 +43,7 @@ Show all tutorials sorted by trust, in reverse order (lowest to highest)
 Show all the talks with the tag `testing`
 
     pc show -t testing
+
+Show reviwers by completion count
+
+    pc reviewers -s count
