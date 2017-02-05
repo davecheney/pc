@@ -21,9 +21,10 @@ func main() {
 	sort := showCmd.Flag("sort", "sort by which column").Short('s').Default("rating").String()
 	reverse := showCmd.Flag("reverse", "reverse sort order").Short('r').Bool()
 	tag := showCmd.Flag("tag", "filter only tag").Short('t').String()
-	reviewersCmd := kingpin.Command("reviewers", "show reviewer compleition.")
+	reviewersCmd := kingpin.Command("reviewers", "show reviewer completion.")
 	revsort := reviewersCmd.Flag("sort", "sort by which column").Short('s').Default("count").String()
 	todoCmd := kingpin.Command("todo", "show outstanding proposals.")
+	reviewerID := todoCmd.Flag("reviewer", "filter for reviwer ID").Short('i').Default("0").Int()
 	all := todoCmd.Flag("all", "show all outstanding todos (not just latest).").Short('a').Bool()
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
@@ -36,7 +37,7 @@ func main() {
 	case "reviewers":
 		reviewers(*eventid, *revsort)
 	case "todo":
-		todo(*eventid, *all)
+		todo(*eventid, *reviewerID, *all)
 	default:
 		os.Exit(1)
 	}
