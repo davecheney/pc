@@ -51,3 +51,7 @@ Show reviwers by completion count
 Show proposals that have been updated since the newest review
 
     pc todo
+
+Show proposals that have been updated since the _oldest_ review
+
+    pc todo -a

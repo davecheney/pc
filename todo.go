@@ -10,7 +10,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func todo(id int) {
+func todo(id int, all bool) {
 	f, err := os.Open(fmt.Sprintf("papercall.%d.json", id))
 	check(err)
 
@@ -23,13 +23,18 @@ func todo(id int) {
 	table.SetHeader([]string{"title", "format", "tags", "reason", "url"})
 	var rows int
 	sort.Slice(subs, func(i, j int) bool { return subs[j].Updated.After(subs[i].Updated) })
+	rev := func(a, b int) (int, int) {
+		if all {
+			a, b = b, a
+		}
+		return a, b
+	}
+
 	for _, s := range subs {
 		reason := "no rating"
 		if len(s.Ratings) > 0 {
 			sort.Slice(s.Ratings, func(i, j int) bool {
-				// show only reviews where the newest rating is _older_ than the
-				// proposal's updated date
-				j, i = i, j // comment this line to show any proposal whose oldest rating is older than the propsal.
+				i, j = rev(i, j)
 				return s.Ratings[i].Updated.After(s.Ratings[j].Updated)
 			})
 			if s.Updated.After(s.Ratings[0].Updated) {
