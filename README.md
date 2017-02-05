@@ -47,3 +47,7 @@ Show all the talks with the tag `testing`
 Show reviwers by completion count
 
     pc reviewers -s count
+
+Show proposals that have been updated since the newest review
+
+    pc todo

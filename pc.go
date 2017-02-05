@@ -23,6 +23,7 @@ func main() {
 	tag := showCmd.Flag("tag", "filter only tag").Short('t').String()
 	reviewersCmd := kingpin.Command("reviewers", "show reviewer compleition.")
 	revsort := reviewersCmd.Flag("sort", "sort by which column").Short('s').Default("count").String()
+	kingpin.Command("todo", "show outstanding proposals.")
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
 	kingpin.CommandLine.Help = "pc is a command line tool to analyse PaperCall.io CFP results"
@@ -33,6 +34,8 @@ func main() {
 		refreshCache(*eventid)
 	case "reviewers":
 		reviewers(*eventid, *revsort)
+	case "todo":
+		todo(*eventid)
 	default:
 		os.Exit(1)
 	}
