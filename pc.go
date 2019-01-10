@@ -10,7 +10,7 @@ import (
 
 var (
 	apiKey  = kingpin.Flag("apikey", "PAPERCALL_API_TOKEN").Short('k').Default(os.Getenv("PAPERCALL_API_TOKEN")).String()
-	eventid = kingpin.Flag("event", "event id.").Short('e').Default("274").Int()
+	eventid = kingpin.Flag("event", "event id.").Short('e').Default("1701").Int()
 )
 
 func main() {
@@ -26,6 +26,7 @@ func main() {
 	todoCmd := kingpin.Command("todo", "show outstanding proposals.")
 	reviewerID := todoCmd.Flag("reviewer", "filter for reviwer ID").Short('i').Default("0").Int()
 	all := todoCmd.Flag("all", "show all outstanding todos (not just latest).").Short('a').Bool()
+	kingpin.Command("speakers", "show speakers.")
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
 	kingpin.CommandLine.Help = "pc is a command line tool to analyse PaperCall.io CFP results"
@@ -38,6 +39,8 @@ func main() {
 		reviewers(*eventid, *revsort)
 	case "todo":
 		todo(*eventid, *reviewerID, *all)
+	case "speakers":
+		speakers(*eventid)
 	default:
 		os.Exit(1)
 	}

@@ -33,6 +33,7 @@ type Submission struct {
 	Trust     float64   `json:"trust"`
 	State     string    `json:"state"`
 	Tags      []string  `json:"tag_list,omitempty"`
+	*Profile  `json:"profile,omitempty"`
 	Talk      `json:"talk"`
 	Ratings   []Rating `json:"ratings"`
 }
@@ -46,24 +47,33 @@ type Rating struct {
 	User     `json:"user"`
 }
 
+type Profile struct {
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	ShirtSize string `json:"shirt_size"`
+}
+
 func refreshCache(id int) {
-	req, err := http.NewRequest("GET", "https://www.papercall.io/api/v1/submissions?per_page=9999", nil)
-	check(err)
-	req.Header.Add("Authorization", *apiKey)
-	resp, err := http.DefaultClient.Do(req)
-	check(err)
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		log.Fatalf("expecting status 200, got %d", resp.Status)
-	}
 	var submissions []*Submission
-	dec := json.NewDecoder(resp.Body)
-	err = dec.Decode(&submissions)
-	check(err)
+	for _, state := range []string{"submitted", "accepted", "rejected", "waitlist"} {
+		req, err := http.NewRequest("GET", "https://www.papercall.io/api/v1/submissions?per_page=9999&state="+state, nil)
+		check(err)
+		req.Header.Add("Authorization", *apiKey)
+		resp, err := http.DefaultClient.Do(req)
+		check(err)
+		defer resp.Body.Close()
 
-	log.Println("retrieved", len(submissions), "submissions")
+		if resp.StatusCode != 200 {
+			log.Fatalf("expecting status 200, got %v", resp.Status)
+		}
+		dec := json.NewDecoder(resp.Body)
+		var s []*Submission
+		err = dec.Decode(&s)
+		check(err)
 
+		log.Println("retrieved", len(s), state, "submissions")
+		submissions = append(submissions, s...)
+	}
 	f, err := os.Create(fmt.Sprintf("papercall.%d.json", id))
 	check(err)
 	defer f.Close()
