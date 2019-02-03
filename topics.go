@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/aclements/go-moremath/stats"
 )
 
 type Topic struct {
@@ -17,7 +19,8 @@ type Topic struct {
 }
 
 func topics(id int, input string) {
-	subs := submissions(fmt.Sprintf("papercall.%d.json", id))
+	path := fmt.Sprintf("papercall.%d.json", id)
+	subs := submissions(path)
 
 	f, err := os.Open(input)
 	check(err)
@@ -42,11 +45,21 @@ func topics(id int, input string) {
 		topics = append(topics, topic)
 	}
 
-	t, err := template.New("topics").Parse(topicsT)
+	sort.SliceStable(topics, func(i, j int) bool {
+		return topics[i].Name < topics[j].Name
+	})
+
+	t, err := template.New("topics").Funcs(map[string]interface{}{
+		"mean":   meanRating,
+		"stddev": stddevRating,
+	}).Parse(topicsT)
+	check(err)
+	fi, err := os.Stat(path)
 	check(err)
 	err = t.Execute(os.Stdout, map[string]interface{}{
-		"cfp":    1642, // cannot figure out how to get this from the API
-		"Topics": topics,
+		"cfp":       1642, // cannot figure out how to get this from the API
+		"Topics":    topics,
+		"inputfile": fi,
 	})
 	check(err)
 }
@@ -62,32 +75,49 @@ const topicsT = `<!doctype html>
   <title>GopherCon 2019 topic breakdown</title>
 </head>
 <body>
-  <h1>GopherCon 2019 topic breakdown</h1>
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 <div class="container">
+<h1>GopherCon 2019 topic breakdown</h1>
+<p>Ratings last updated: {{.inputfile.ModTime}}</p>
+<p><em>note: parenthesis following rating is the percentage of reviewers who have contributed to the rating.</em></p>
 <base href="https://www.papercall.io/cfps/{{.cfp}}/submissions/">
+<ol>
 {{ range .Topics }}
-<h2>{{ .Name }}</h1>
+<li><h2>{{ .Name }}</h1>
 {{ range .Submissions }}
 <div class="row justify-content-md-left">
-  <div class="col-6">
+  <div class="col-5">
     <a href="{{.Id}}">{{ .Talk.Title }}</a>
   </div>
-  <div class="col-2">
-    {{ .Rating }}
-  </div>  
-  <div class="col-2">
-    {{ .Trust }}
-  </div>
+  <div class="col-3">{{.Talk.Format }}</div>
+  <div class="col-2">{{ mean .Ratings | printf "%3.1f" }} ± {{ stddev .Ratings | printf "%3.1f%%" }}</div>
+  <div class="col-2">{{.State }}</div>
 </div>
 {{ end }}
+</li>
 {{ end }}
 </div>
 </body>
 </html>
 `
+
+func meanRating(ratings []Rating) float64 {
+	values := make([]float64, 0, len(ratings))
+	for _, r := range ratings {
+		values = append(values, float64(r.Value))
+	}
+	return stats.Mean(values)
+}
+
+func stddevRating(ratings []Rating) float64 {
+	values := make([]float64, 0, len(ratings))
+	for _, r := range ratings {
+		values = append(values, float64(r.Value))
+	}
+	return stats.StdDev(values)
+}
 
 func submissions(path string) map[int]*Submission {
 	f, err := os.Open(path)
