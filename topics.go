@@ -89,7 +89,9 @@ const topicsT = `<!doctype html>
 {{ range .Submissions }}
 <div class="row justify-content-md-left">
   <div class="col-5">
-    <a href="{{.Id}}">{{ .Talk.Title }}</a>
+{{ if eq .State "rejected" }}<s>{{ end }}
+  <a href="{{.Id}}">{{ .Talk.Title }}</a>
+{{ if eq .State "rejected" }}</s>{{ end }}
   </div>
   <div class="col-3">{{.Talk.Format }}</div>
   <div class="col-2">{{ mean .Ratings | printf "%3.1f" }} ± {{ diff .Ratings | printf "%.0f%%" }}</div>
