@@ -52,6 +52,7 @@ func topics(id int, input string) {
 	t, err := template.New("topics").Funcs(map[string]interface{}{
 		"mean":   meanRating,
 		"stddev": stddevRating,
+		"diff":   diffRatings,
 	}).Parse(topicsT)
 	check(err)
 	fi, err := os.Stat(path)
@@ -81,7 +82,6 @@ const topicsT = `<!doctype html>
 <div class="container">
 <h1>GopherCon 2019 topic breakdown</h1>
 <p>Ratings last updated: {{.inputfile.ModTime}}</p>
-<p><em>note: parenthesis following rating is the percentage of reviewers who have contributed to the rating.</em></p>
 <base href="https://www.papercall.io/cfps/{{.cfp}}/submissions/">
 <ol>
 {{ range .Topics }}
@@ -92,7 +92,7 @@ const topicsT = `<!doctype html>
     <a href="{{.Id}}">{{ .Talk.Title }}</a>
   </div>
   <div class="col-3">{{.Talk.Format }}</div>
-  <div class="col-2">{{ mean .Ratings | printf "%3.1f" }} ± {{ stddev .Ratings | printf "%3.1f%%" }}</div>
+  <div class="col-2">{{ mean .Ratings | printf "%3.1f" }} ± {{ diff .Ratings | printf "%.0f%%" }}</div>
   <div class="col-2">{{.State }}</div>
 </div>
 {{ end }}
@@ -112,11 +112,43 @@ func meanRating(ratings []Rating) float64 {
 }
 
 func stddevRating(ratings []Rating) float64 {
+	return stats.StdDev(values(ratings))
+}
+
+func values(ratings []Rating) []float64 {
 	values := make([]float64, 0, len(ratings))
 	for _, r := range ratings {
 		values = append(values, float64(r.Value))
 	}
-	return stats.StdDev(values)
+	return values
+}
+
+func computeStats(ratings []Rating) (min, max, mean float64) {
+	// Discard outliers.
+	values := stats.Sample{Xs: values(ratings)}
+	q1, q3 := values.Quantile(0.25), values.Quantile(0.75)
+
+	var rvalues []float64
+	lo, hi := q1-1.5*(q3-q1), q3+1.5*(q3-q1)
+	for _, value := range values.Xs {
+		if lo <= value && value <= hi {
+			rvalues = append(rvalues, value)
+		}
+	}
+
+	// Compute statistics of remaining data.
+	min, max = stats.Bounds(rvalues)
+	mean = stats.Mean(rvalues)
+	return
+}
+
+func diffRatings(ratings []Rating) float64 {
+	min, max, mean := computeStats(ratings)
+	diff := 1 - min/mean
+	if d := max/mean - 1; d > diff {
+		diff = d
+	}
+	return diff * 100
 }
 
 func submissions(path string) map[int]*Submission {
