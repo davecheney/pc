@@ -18,13 +18,16 @@ type Topic struct {
 	Submissions []*Submission
 }
 
-func topics(id int, input string) {
+func topics(id int, input, knockout string) {
 	path := fmt.Sprintf("papercall.%d.json", id)
 	subs := submissions(path)
+	ko := knockouts(knockout)
 
 	f, err := os.Open(input)
 	check(err)
+	defer f.Close()
 	sc := bufio.NewScanner(f)
+
 	var topics []Topic
 	for sc.Scan() {
 		fields := strings.Fields(sc.Text())
@@ -34,6 +37,12 @@ func topics(id int, input string) {
 		for _, f := range fields[1:] {
 			id, err := strconv.ParseInt(f, 10, 64)
 			check(err)
+
+			// is this id on the knockout list?
+			if ko[int(id)] {
+				continue // yes? skip it
+			}
+
 			s, ok := subs[int(id)]
 			if ok {
 				topic.Submissions = append(topic.Submissions, s)
@@ -65,6 +74,23 @@ func topics(id int, input string) {
 	check(err)
 }
 
+func knockouts(path string) map[int]bool {
+	f, err := os.Open(path)
+	check(err)
+	defer f.Close()
+
+	ko := make(map[int]bool)
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		for _, f := range strings.Fields(sc.Text()) {
+			id, err := strconv.ParseInt(f, 10, 64)
+			check(err)
+			ko[int(id)] = true
+		}
+	}
+	return ko
+}
+
 const topicsT = `<!doctype html>
 <html lang="en">
 <head>
@@ -88,14 +114,14 @@ const topicsT = `<!doctype html>
 <li><h2>{{ .Name }}</h1>
 {{ range .Submissions }}
 <div class="row justify-content-md-left">
-  <div class="col-5">
+  <div class="col-6">
 {{ if eq .State "rejected" }}<s>{{ end }}
   <a href="{{.Id}}">{{ .Talk.Title }}</a>
 {{ if eq .State "rejected" }}</s>{{ end }}
   </div>
   <div class="col-3">{{.Talk.Format }}</div>
-  <div class="col-2">{{ mean .Ratings | printf "%3.1f" }} ± {{ diff .Ratings | printf "%.0f%%" }}</div>
-  <div class="col-2">{{.State }}</div>
+  <div class="col-2">{{ mean .Ratings | printf "%.0f" }} ± {{ stddev .Ratings | printf "%.0f" }}</div>
+  <div class="col-1">{{.State }}</div>
 </div>
 {{ end }}
 </li>

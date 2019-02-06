@@ -29,6 +29,7 @@ func main() {
 	kingpin.Command("speakers", "show speakers.")
 	topicsCmd := kingpin.Command("topics", "build HTML page of proposals by topic")
 	input := topicsCmd.Flag("input", "space separated list of topic name and proposals ids").Short('i').Required().String()
+	knockout := topicsCmd.Flag("knockout", "whitespace delimimited list of proposal id's to exclude").Default("/dev/null").String()
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("0.1").Author("Dave Cheney")
 	kingpin.CommandLine.Help = "pc is a command line tool to analyse PaperCall.io CFP results"
@@ -44,7 +45,7 @@ func main() {
 	case "speakers":
 		speakers(*eventid)
 	case "topics":
-		topics(*eventid, *input)
+		topics(*eventid, *input, *knockout)
 	default:
 		os.Exit(1)
 	}
