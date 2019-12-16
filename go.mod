@@ -1,5 +1,7 @@
 module github.com/arschles/pc
 
+go 1.13
+
 require (
 	github.com/aclements/go-moremath v0.0.0-20180329182055-b1aff36309c7
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
@@ -8,5 +10,3 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
-
-go 1.13
