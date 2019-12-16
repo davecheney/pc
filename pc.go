@@ -10,7 +10,7 @@ import (
 
 var (
 	apiKey  = kingpin.Flag("apikey", "PAPERCALL_API_TOKEN").Short('k').Default(os.Getenv("PAPERCALL_API_TOKEN")).String()
-	eventid = kingpin.Flag("event", "event id.").Short('e').Default("1701").Int()
+	eventid = kingpin.Flag("event", "event id.").Short('e').Default(os.Getenv("PAPERCALL_EVENT_ID")).Int()
 )
 
 func main() {
