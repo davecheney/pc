@@ -3,9 +3,7 @@ A CLI for papercall.io conferences.
 
 # Installation
 
-`pc` is writen in Go. You will need Go 1.8beta1 or later. You will need a properly configured `$GOPATH` workspace.
-
-    go get -u github.com/davecheney/pc
+`pc` is writen in Go. You will need Go 1.11 or later to build it.
 
 # Papercall API access required
 
@@ -16,9 +14,15 @@ To obtain your API token, go to the papercall website, click the events tab, cho
 
 Once you have your API key export it in your shell
 
-    export PAPERCALL_API_TOKEN=ae91a85a4d25c005a91172d7b51ba9bfcfa3c95a
+```
+$ export PAPERCALL_API_TOKEN=ae91a85a4d25c005a91172d7b51ba9bfcfa3c95a
+```
 
-You can also use the `-k` or `--apikey` flags, but this is not recommended.
+Addionally, you'll need your papercall event ID. This will be in the URL for your event. Once you have it, export it in your shell:
+
+```
+$ export PAPERCALL_EVENT_ID=12345
+```
 
 # Usage
 
@@ -27,8 +31,6 @@ You can also use the `-k` or `--apikey` flags, but this is not recommended.
     pc refresh
 
 This will download all the submissions, and their ratings and cache them locally.
-
-TODO(dfc) this is currently hard coded for event 274 as papercall does not provide a way to determine the event id for a given API key. If you need to use a different event id, use the `-e` flag.
 
 Once you have downloaded the data for your event, you can display it with
 
